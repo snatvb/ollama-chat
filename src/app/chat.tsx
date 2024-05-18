@@ -11,6 +11,7 @@ import { useAtom, useAtomValue } from 'jotai';
 import { state } from './state';
 import { Conversation, updateConversation } from './state/conversation';
 import { ReloadIcon } from '@radix-ui/react-icons';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 const states: Record<string, { state: 'loading' }> = {};
 
@@ -81,66 +82,65 @@ export default memo(function Chat() {
 	}, [currentConversationId, currentConversation]);
 
 	return (
-		<div
-			ref={chatRef}
-			className="h-full w-full overflow-hidden overflow-y-scroll"
-		>
-			<div className="flex flex-col min-h-full justify-end w-full px-4">
-				{match(currentConversation)
-					.with(
-						{
-							status: 'loaded',
-							value: P.when((v) => (v?.chatHistory.length ?? 0) > 0),
-						},
-						({ value }) => {
-							return <ConversationBlock conversation={value!} />;
-						},
-					)
-					.with(
-						{
-							status: 'loaded',
-							value: P.when((v) => v === undefined),
-						},
-						() => {
-							return (
-								<p className="text-neutral-600 dark:text-neutral-400 text-center text-xl p-16 max-w-lg flex self-center">
-									Chat is not selected. Please select a chat from the sidebar,
-									or create a new one.
-								</p>
-							);
-						},
-					)
-					.with(
-						{
-							status: 'loading',
-						},
-						() => {
-							return (
-								<p>
-									<ReloadIcon className="h-16 w-16 animate-spin" />
-								</p>
-							);
-						},
-					)
-					.otherwise(() => (
-						<p className="text-neutral-400 dark:text-neutral-600 text-center mt-10">
-							No message
-						</p>
-					))}
-				{generating && (
-					<div className={`relative w-full flex`}>
-						<p className="mt-2.5 text-neutral-400">{OllamaAvatarPrerender}</p>
-						<div
-							className={`flex flex-col mb-10 bg-zinc-100 dark:bg-zinc-900 border-solid border-neutral-200 dark:border-neutral-800 border rounded-xl p-2 w-[80%]`}
-						>
-							<Skeleton className="w-full h-10 animate-pulse" />
-
-							<p className="absolute bottom-[20px] text-xs text-neutral-500">
-								{dayjs(Date.now()).format('HH:MM:ss')}
+		<div className="w-full h-full relative">
+			<div className="flex flex-col justify-end absolute left-0 top-0 w-full h-full">
+				<ScrollArea viewPortRef={chatRef} className="w-full px-4">
+					{match(currentConversation)
+						.with(
+							{
+								status: 'loaded',
+								value: P.when((v) => (v?.chatHistory.length ?? 0) > 0),
+							},
+							({ value }) => {
+								return <ConversationBlock conversation={value!} />;
+							},
+						)
+						.with(
+							{
+								status: 'loaded',
+								value: P.when((v) => v === undefined),
+							},
+							() => {
+								return (
+									<p className="text-neutral-600 dark:text-neutral-400 text-center text-xl p-16 max-w-lg flex self-center">
+										Chat is not selected. Please select a chat from the sidebar,
+										or create a new one.
+									</p>
+								);
+							},
+						)
+						.with(
+							{
+								status: 'loading',
+							},
+							() => {
+								return (
+									<p>
+										<ReloadIcon className="h-16 w-16 animate-spin" />
+									</p>
+								);
+							},
+						)
+						.otherwise(() => (
+							<p className="text-neutral-400 dark:text-neutral-600 text-center mt-10">
+								No message
 							</p>
+						))}
+					{generating && (
+						<div className={`relative w-full flex`}>
+							<p className="mt-2.5 text-neutral-400">{OllamaAvatarPrerender}</p>
+							<div
+								className={`flex flex-col mb-10 bg-zinc-100 dark:bg-zinc-900 border-solid border-neutral-200 dark:border-neutral-800 border rounded-xl p-2 w-[80%]`}
+							>
+								<Skeleton className="w-full h-10 animate-pulse" />
+
+								<p className="absolute bottom-[20px] text-xs text-neutral-500">
+									{dayjs(Date.now()).format('HH:MM:ss')}
+								</p>
+							</div>
 						</div>
-					</div>
-				)}
+					)}
+				</ScrollArea>
 			</div>
 		</div>
 	);
