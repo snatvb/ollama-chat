@@ -3,6 +3,7 @@ import { selectAtom } from 'jotai/utils';
 import Immutable from 'immutable';
 import { atomPersist, atomWithAsyncStorage, db } from './persist';
 import { store } from './store';
+import { generates } from './app';
 
 export type Message = {
 	created_at: Date;
@@ -71,6 +72,13 @@ const currentChat = atom((get) => {
 
 export const current = {
 	id: currentId,
+	generating: atom((get) => {
+		const id = get(currentId);
+		if (!id) {
+			return false;
+		}
+		return get(generates).has(id);
+	}),
 	model: selectAtom(currentChat, (chat) => chat.value?.model),
 	chat: currentChat,
 };

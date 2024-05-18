@@ -4,7 +4,7 @@ import Immutable from 'immutable';
 import { Model } from '@/core';
 
 export const lastResponseTime = atom<number | undefined>(undefined);
-export const generating = atom<string | undefined>(undefined);
+export const generates = atom(Immutable.Set<string>());
 export const connected = atom<boolean>(false);
 export const visited = atomPersist(
 	'VISITED',

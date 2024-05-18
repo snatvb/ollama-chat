@@ -15,14 +15,14 @@ import { useEvent } from '@/hooks/use-event';
 
 export default memo(function Header() {
 	const connected = useAtomValue(state.app.connected);
-	const generating = useAtomValue(state.app.generating);
+	const generating = useAtomValue(state.conversation.current.generating);
 	const [currentChatId, setCurrentChatId] = useAtom(
 		state.conversation.current.id,
 	);
 	const lastResponseTime = useAtomValue(state.app.lastResponseTime);
 	const updateConversations = useSetAtom(state.conversation.record);
 	const requestUpdateModels = useRequestUpdateModels();
-	const disabled = generating ? generating === currentChatId : false;
+	const disabled = generating;
 
 	useEffect(() => {
 		if (connected) {

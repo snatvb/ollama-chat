@@ -31,7 +31,7 @@ export default memo(function Chat() {
 	const [currentConversationId, setCurrentConversationId] = useAtom(
 		state.conversation.current.id,
 	);
-	const generating = useAtomValue(state.app.generating);
+	const generating = useAtomValue(state.conversation.current.generating);
 	const currentConversation = useAtomValue(state.conversation.current.chat);
 
 	useEffect(() => {
@@ -127,7 +127,7 @@ export default memo(function Chat() {
 							No message
 						</p>
 					))}
-				{generating && generating === currentConversationId && (
+				{generating && (
 					<div className={`relative w-full flex`}>
 						<p className="mt-2.5 text-neutral-400">{OllamaAvatarPrerender}</p>
 						<div

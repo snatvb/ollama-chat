@@ -6,7 +6,7 @@ import { SendIcon } from 'lucide-react';
 import { convertTextToJson, ollamaGenerate } from '@/core';
 import { toast } from '@/components/ui/use-toast';
 import { state } from './state';
-import { useAtom, useAtomValue, useSetAtom } from 'jotai';
+import { useAtomValue, useSetAtom } from 'jotai';
 import {
 	appendHistoryConversation,
 	updateConversation,
@@ -23,10 +23,9 @@ export default memo(function InputPrompt() {
 	const [txt, setTxt] = useState(
 		() => drafts.get(currentConversationId ?? '') ?? '',
 	);
-	const [generating, setGenerating] = useAtom(state.app.generating);
-	const disabled =
-		!connected ||
-		(generating === currentConversationId && generating !== undefined);
+	const setGenerates = useSetAtom(state.app.generates);
+	const generating = useAtomValue(state.conversation.current.generating);
+	const disabled = !connected || generating;
 
 	useLayoutEffect(() => {
 		if (currentConversationId) {
@@ -44,17 +43,14 @@ export default memo(function InputPrompt() {
 
 	async function submitPrompt() {
 		const startTime = Date.now();
-		try {
-			if (txt === '' || currentChat.status !== 'loaded') {
-				return;
-			}
-			const chat = currentChat.value;
-			if (!chat) {
-				return;
-			}
+		const chat = currentChat.value;
+		if (!chat || currentChat.status !== 'loaded' || txt === '' || generating) {
+			return;
+		}
 
+		try {
 			setTxt('');
-			setGenerating(chat.id);
+			setGenerates((g) => g.add(chat.id));
 
 			appendHistoryConversation(chat.id, {
 				created_at: new Date(),
@@ -90,7 +86,7 @@ export default memo(function InputPrompt() {
 					'Something went wrong sending the promt, Check Info & Help',
 			});
 		} finally {
-			setGenerating(undefined);
+			setGenerates((g) => g.delete(chat.id));
 		}
 
 		// After its done, we need to auto focus since we disable the input whole its processing the request.
