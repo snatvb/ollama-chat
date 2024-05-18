@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { core, generateRandomString } from '@/core';
+import { generateRandomString } from '@/core';
 import { useAtom, useAtomValue } from 'jotai';
 import { memo, useState } from 'react';
 import { state } from './state';
@@ -32,8 +32,15 @@ export default memo(function Sidebar() {
 			return;
 		}
 
-		const id = generateRandomString(8);
-		core.currentConversation.set(id);
+		let id = generateRandomString(8);
+		let iters = 0;
+		while (conversations.value.has(id)) {
+			id = generateRandomString(8);
+			iters++;
+			if (iters > 100) {
+				throw new Error('Too many iterations');
+			}
+		}
 		setConversations((c) =>
 			c.set(id, {
 				id,
