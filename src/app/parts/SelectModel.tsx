@@ -1,85 +1,61 @@
-import {
-	Select,
-	SelectContent,
-	SelectGroup,
-	SelectItem,
-	SelectLabel,
-	SelectTrigger,
-	SelectValue,
-} from '@/components/ui/select';
-import { core } from '@/core';
-import { ExclamationTriangleIcon } from '@radix-ui/react-icons';
-import React, { useCallback, useState } from 'react';
-import { useSimple } from 'simple-core-state';
+import { Select, SelectTrigger } from '@/components/ui/select';
+import { useLayoutEffect, useState } from 'react';
 import { ConfirmSwitchModel } from './ConfirmSwitchModel';
-import { ModelTypes } from '@/core/types';
+import { useAtomValue } from 'jotai';
+import { state } from '../state';
+import { updateConversation } from '../state/conversation';
+import { SelectModelsContent } from './select-default-model';
+import { useEvent } from '@/hooks/use-event';
 
-interface ISelectConversationProps {
-	loading: boolean;
-}
-
-export const SelectModel: React.FC<ISelectConversationProps> = ({
-	loading,
-}) => {
-	const model = useSimple(core.model);
-	const installedModels = useSimple(core.installedModels);
-	const currentConv = useSimple(core.currentConversation);
-	const conversations = useSimple(core.conversations);
+export function SelectModel() {
+	const currentModel = useAtomValue(state.conversation.current.model);
+	const [model, setModel] = useState(currentModel);
+	const currentId = useAtomValue(state.conversation.current.id);
 
 	const [showWarning, setShowWarning] = useState(false);
 
-	const onConfirmHandler = useCallback(
-		(s: boolean, r?: boolean) => {
-			if (s) {
-				if (r) {
-					core.conversations.patchObject({
-						[currentConv]: { chatHistory: [], ctx: [], model: model },
-					});
-				} else {
-					core.conversations.patchObject({
-						[currentConv]: { ...conversations[currentConv], model: model },
-					});
-				}
-			} else {
-				core.model.revert();
-			}
+	useLayoutEffect(() => {
+		setModel(currentModel);
+	}, [currentModel]);
 
-			setShowWarning(false);
-		},
-		[model, currentConv, currentConv],
-	);
+	function handleConfirm(switchModel: boolean, resetChat?: boolean) {
+		if (!currentId || !model) {
+			return;
+		}
+		if (switchModel) {
+			if (resetChat) {
+				updateConversation(currentId, (chat) => ({
+					...chat,
+					model,
+					chatHistory: [],
+					ctx: [],
+				}));
+			} else {
+				updateConversation(currentId, (chat) => ({ ...chat, model }));
+			}
+		} else {
+			setModel(currentModel);
+		}
+
+		setShowWarning(false);
+	}
+
+	const handleChange = useEvent((newModel: string) => {
+		if (currentId) {
+			setShowWarning(true);
+		}
+		setModel(newModel);
+	});
 
 	return (
-		<div className="mx-2">
-			{showWarning && <ConfirmSwitchModel onClose={onConfirmHandler} />}
-			<Select
-				disabled={loading}
-				value={model}
-				onValueChange={(e) => {
-					setShowWarning(true);
-					core.model.set(e as ModelTypes);
-				}}
-			>
-				<SelectTrigger className="w-fit whitespace-nowrap dark:text-white">
-					<SelectValue placeholder="Select a Model" />
+		<div className="mx-2 text-neutral-900 dark:text-neutral-100">
+			{showWarning && <ConfirmSwitchModel onClose={handleConfirm} />}
+			<Select value={model} onValueChange={handleChange}>
+				<SelectTrigger className="w-full whitespace-nowrap ">
+					{model ?? 'Select a Model'}
 				</SelectTrigger>
-				<SelectContent>
-					<SelectGroup>
-						<SelectLabel>Models</SelectLabel>
-						{installedModels.map((item, index) => (
-							<SelectItem key={index} value={item.name}>
-								<div className="flex flex-row items-center">
-									<a>{item.name}</a>
-									{!installedModels.filter((e) => e.name.includes(item.name))
-										?.length && (
-										<ExclamationTriangleIcon className="ml-2" color="#e94646" />
-									)}
-								</div>
-							</SelectItem>
-						))}
-					</SelectGroup>
-				</SelectContent>
+				<SelectModelsContent />
 			</Select>
 		</div>
 	);
-};
+}

@@ -8,6 +8,7 @@ export type ModelTypes =
 	| 'orca-mini';
 
 export interface Conversation {
+	id: string;
 	model: ModelTypes;
 	ctx: number[];
 	chatHistory: {
@@ -39,5 +40,6 @@ export type CoreStore = {
 	installedModels: IModelType[];
 	visited: boolean;
 	generating: boolean;
+	migrated: boolean;
 	lastResponseTime: number | undefined;
 };

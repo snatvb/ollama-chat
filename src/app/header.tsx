@@ -1,63 +1,53 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Tooltip, TooltipContent } from '@/components/ui/tooltip';
 import { TrashIcon } from '@radix-ui/react-icons';
-import { TooltipTrigger } from '@radix-ui/react-tooltip';
 import { SelectModel } from './parts/SelectModel';
 import { SideInfoSheet } from './parts/SideInfoSheet';
 import { ModeToggle } from '@/components/mode-toggle';
 import { core } from '@/core';
-import { useSimple } from 'simple-core-state';
 import { ConfirmChatClear } from './parts/ConfirmChatClear';
-import { memo, useEffect, useState } from 'react';
-import { updateModelsAvailability } from './helper';
-import { toast } from '@/components/ui/use-toast';
+import { memo, useEffect } from 'react';
+import { useRequestUpdateModels } from './helper';
+import { useAtom, useAtomValue, useSetAtom } from 'jotai';
+import { state } from './state';
+import { AlertDialog, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { useEvent } from '@/hooks/use-event';
 
 export default memo(function Header() {
-	const connected = useSimple(core.serverConnected);
-	const generating = useSimple(core.generating);
-	const lastResponseTime = useSimple(core.lastResponseTime);
-	const [showChatClearDialog, setShowChatClearDialog] = useState(false);
+	const connected = useAtomValue(state.app.connected);
+	const generating = useAtomValue(state.conversation.current.generating);
+	const [currentChatId, setCurrentChatId] = useAtom(
+		state.conversation.current.id,
+	);
+	const lastResponseTime = useAtomValue(state.app.lastResponseTime);
+	const updateConversations = useSetAtom(state.conversation.record);
+	const requestUpdateModels = useRequestUpdateModels();
+	const disabled = generating;
 
 	useEffect(() => {
 		if (connected) {
-			try {
-				updateModelsAvailability();
-			} catch (error) {
-				toast({
-					variant: 'destructive',
-					title: 'Something went wrong',
-					description: String(error),
-				});
-			}
+			requestUpdateModels();
+			// try {
+			// 	updateModelsAvailability();
+			// } catch (error) {
+			// 	toast({
+			// 		variant: 'destructive',
+			// 		title: 'Something went wrong',
+			// 		description: String(error),
+			// 	});
+			// }
 		} else {
 			core.installedModels.reset();
 		}
 	}, [connected]);
 
-	function deleteConversation() {
-		const conversations = { ...core.conversations._value };
-
-		const currentConversation = core.currentConversation._value;
-		// Don't delete the session object but clear instead
-		if (currentConversation === 'session') {
-			conversations['session'] = {
-				chatHistory: [],
-				ctx: [],
-				model: core.model._value,
-			};
-		} else {
-			// all other conversations will be removed
-			delete conversations[currentConversation];
+	const deleteChat = useEvent(function deleteConversation() {
+		if (!currentChatId) {
+			return;
 		}
-
-		// Update the core
-		core.conversations.set(conversations);
-
-		// Select a new conversation
-		const nextId = Object.entries(conversations)?.[0]?.[0] || 'session';
-		core.currentConversation.set(nextId);
-	}
+		updateConversations((prev) => prev.delete(currentChatId));
+		setCurrentChatId(undefined);
+	});
 
 	return (
 		<div className="flex items-center justify-between w-full p-2">
@@ -79,36 +69,28 @@ export default memo(function Header() {
 			</div>
 
 			<div className="flex items-center">
-				<Tooltip>
-					<TooltipTrigger>
-						<Button
-							disabled={generating}
-							size="default"
-							className="w-10 p-0 px-2 ml-2 bg-red-400 hover:bg-red-400 dark:bg-red-500 dark:hover:bg-red-500 dark:text-white hover:opacity-60"
-							onClick={() => setShowChatClearDialog(true)}
-						>
-							<TrashIcon height={21} width={21} />
-						</Button>
-					</TooltipTrigger>
-					<TooltipContent side="bottom">
-						<p>Delete Conversation</p>
-					</TooltipContent>
-				</Tooltip>
+				{currentChatId && (
+					<>
+						<AlertDialog>
+							<AlertDialogTrigger asChild>
+								<Button
+									disabled={disabled || !currentChatId}
+									size="default"
+									className="w-10 p-0 px-2 ml-2 bg-red-400 hover:bg-red-400 dark:bg-red-500 dark:hover:bg-red-500 dark:text-white hover:opacity-60"
+								>
+									<TrashIcon height={21} width={21} />
+								</Button>
+							</AlertDialogTrigger>
+							<ConfirmChatClear onAgree={deleteChat} />
+						</AlertDialog>
 
-				<SelectModel loading={generating} />
-				<SideInfoSheet loading={generating} />
+						<SelectModel />
+					</>
+				)}
+				<SideInfoSheet loading={disabled} />
+
 				<ModeToggle />
 			</div>
-			{showChatClearDialog && (
-				<ConfirmChatClear
-					onClose={(e) => {
-						setShowChatClearDialog(false);
-						if (e) {
-							deleteConversation();
-						}
-					}}
-				/>
-			)}
 		</div>
 	);
 });

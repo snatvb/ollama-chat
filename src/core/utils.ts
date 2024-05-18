@@ -1,11 +1,27 @@
-import axios from 'axios';
+import axios, { AxiosResponse } from 'axios';
 import { core } from '.';
 
-export async function ollamaRequest(
+export type Model = {
+	digest: string;
+	model: string;
+	modified_at: string;
+	name: string;
+	size: number;
+	details: {
+		families: string[];
+		family: string;
+		format: string;
+		parameter_size: string;
+		parent_model: string;
+		quantization_level: string;
+	};
+};
+
+export async function ollamaRequest<R = any>(
 	method: 'GET' | 'POST',
 	path: string,
 	c?: { data?: any },
-) {
+): Promise<AxiosResponse<R, any>> {
 	try {
 		const res = await axios({
 			method,

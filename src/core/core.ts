@@ -4,7 +4,13 @@ import { CoreStore } from './types';
 const instance = new SimpleCore<CoreStore>(
 	{
 		conversations: {
-			session: { chatHistory: [], ctx: [], model: 'llama3', name: 'Session' },
+			session: {
+				id: 'session',
+				chatHistory: [],
+				ctx: [],
+				model: 'llama3',
+				name: 'Session',
+			},
 		},
 		currentConversation: 'session',
 		model: 'llama3',
@@ -13,6 +19,7 @@ const instance = new SimpleCore<CoreStore>(
 		installedModels: [],
 		visited: false,
 		generating: false,
+		migrated: false,
 		lastResponseTime: undefined,
 	},
 	{ storage: { prefix: 'ollama_web_ui_' } },
@@ -24,6 +31,7 @@ instance.persist([
 	'visited',
 	'conversations',
 	'currentConversation',
+	'migrated',
 ]);
 
 export const core = instance.core();
