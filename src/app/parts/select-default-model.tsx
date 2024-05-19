@@ -53,12 +53,16 @@ export const SelectDefaultModel = memo(function SelectDefaultModel(
 	props: Props,
 ) {
 	const [model, setModel] = useAtom(state.app.model);
+	const tutorial = useAtomValue(state.tutorial.element);
 
 	const handleValueChange = props.onValueChange ?? setModel;
 
 	return (
 		<Select value={model} onValueChange={handleValueChange}>
-			<SelectTrigger className="w-full whitespace-nowrap ">
+			<SelectTrigger className="w-full whitespace-nowrap relative">
+				{tutorial === 'model' && (
+					<span className="animate-ping absolute inline-flex w-1/2 h-1/2 left-1/4 rounded-sm bg-sky-400 opacity-75" />
+				)}
 				{model ?? 'Select a Model'}
 			</SelectTrigger>
 			<SelectModelsContent />

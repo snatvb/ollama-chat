@@ -17,6 +17,7 @@ export default memo(function Sidebar() {
 	const [currentEdit, setCurrentEdit] = useState('');
 	const [conversations, setConversations] = useAtom(state.conversation.record);
 	const [currentId, setCurrentId] = useAtom(state.conversation.current.id);
+	const tutorial = useAtomValue(state.tutorial.element);
 	const model = useAtomValue(state.app.model);
 
 	function newConversation() {
@@ -27,7 +28,9 @@ export default memo(function Sidebar() {
 		if (!model) {
 			toast({
 				title: 'Please select a model first',
+				description: 'You need open Settings & Info and select a model first',
 				variant: 'destructive',
+				duration: 15000,
 			});
 			return;
 		}
@@ -56,10 +59,13 @@ export default memo(function Sidebar() {
 	return (
 		<div className="flex flex-col shrink-0 p-4 pt-3 w-[280px] dark:text-white bg-neutral-50 dark:bg-stone-950">
 			<Button
-				className="w-full dark:text-white"
+				className="w-full dark:text-white relative"
 				variant="outline"
 				onClick={newConversation}
 			>
+				{tutorial === 'new-conversation' && (
+					<span className="animate-ping absolute inline-flex w-1/2 h-1/2 rounded-sm bg-sky-400 opacity-75" />
+				)}
 				Create new conversation
 			</Button>
 			<div className="mt-2 overflow-y-auto h-[calc(100%-30px)]">

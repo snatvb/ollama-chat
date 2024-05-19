@@ -9,29 +9,38 @@ import {
 	DialogTrigger,
 } from '@/components/ui/dialog';
 import { useToast } from '@/components/ui/use-toast';
-import { OLLAMA_COMMAND, core } from '@/core';
-import React, { useEffect, useRef } from 'react';
-import { useSimple } from 'simple-core-state';
+import { OLLAMA_COMMAND } from '@/core';
+import { useEffect, useRef } from 'react';
 import { tryConnect } from '../helper';
+import { useAtomValue } from 'jotai';
+import { state } from '../state';
 
-interface IIntroCardProps {
-	onClose: (e?: boolean) => void;
-}
+export type Props = {
+	onClose: () => void;
+};
 
-export const IntroCard: React.FC<IIntroCardProps> = (p) => {
+export function IntroCard(props: Props) {
 	const { toast } = useToast();
 	const ref = useRef<HTMLButtonElement>(null);
-	const serverConnected = useSimple(core.serverConnected);
+	const serverConnected = useAtomValue(state.app.connected);
 
 	useEffect(() => {
-		if (ref.current) ref.current.click();
+		if (ref.current) {
+			ref.current.click();
+		}
 	}, []);
+
+	useEffect(() => {
+		if (serverConnected) {
+			props.onClose();
+		}
+	}, [serverConnected]);
 
 	return (
 		<Dialog
-			onOpenChange={(e) => {
-				if (!e) {
-					p.onClose();
+			onOpenChange={(opened) => {
+				if (!opened) {
+					props.onClose();
 				}
 			}}
 		>
@@ -42,7 +51,7 @@ export const IntroCard: React.FC<IIntroCardProps> = (p) => {
 						Welcome to Ollama Chat Interface
 					</DialogTitle>
 					<DialogDescription className="pt-2">
-						1. Install Ollama on your mac,
+						1. Install Ollama on your mac or pc,
 					</DialogDescription>
 					<div>
 						<a href="https://ollama.ai" target="_blank">
@@ -86,15 +95,10 @@ export const IntroCard: React.FC<IIntroCardProps> = (p) => {
 						)}
 					</div>
 				</DialogHeader>
-				<Button
-					className="mt-6"
-					onClick={() => {
-						p.onClose(true);
-					}}
-				>
+				<Button className="mt-6" onClick={props.onClose}>
 					Close and don't show
 				</Button>
 			</DialogContent>
 		</Dialog>
 	);
-};
+}

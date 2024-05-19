@@ -67,6 +67,7 @@ export interface Props {
 export function SideInfoSheet({ loading }: Props) {
 	const sheetRef = useRef<HTMLButtonElement>(null);
 	const { toast } = useToast();
+	const tutorial = useAtomValue(state.tutorial.element);
 
 	const setConversations = useSetAtom(state.conversation.record);
 
@@ -93,7 +94,13 @@ export function SideInfoSheet({ loading }: Props) {
 		<Sheet>
 			{showResetConfirm && <ConfirmModal onResponse={handleResetResponse} />}
 			<SheetTrigger asChild ref={sheetRef}>
-				<Button variant="outline" className="whitespace-nowrap dark:text-white">
+				<Button
+					variant="outline"
+					className="whitespace-nowrap relative dark:text-white"
+				>
+					{tutorial === 'model' && (
+						<span className="animate-ping absolute inline-flex w-1/2 h-1/2 rounded-sm bg-sky-400 opacity-75" />
+					)}
 					Settings & Info
 				</Button>
 			</SheetTrigger>

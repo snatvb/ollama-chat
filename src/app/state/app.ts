@@ -5,7 +5,10 @@ import { Model } from '@/core';
 
 export const lastResponseTime = atom<number | undefined>(undefined);
 export const generates = atom(Immutable.Set<string>());
-export const connected = atom<boolean>(false);
+export const connectionStatus = atom<
+	'connecting' | 'disconnected' | 'connected'
+>('connecting');
+export const connected = atom((get) => get(connectionStatus) === 'connected');
 export const visited = atomPersist(
 	'VISITED',
 	false,

@@ -39,10 +39,8 @@ function HomePage() {
 			<div className="dark:bg-black h-full w-full flex flex-col justify-center items-center">
 				{showIntroCard && (
 					<IntroCard
-						onClose={(agreed) => {
-							if (agreed) {
-								setVisited(true);
-							}
+						onClose={() => {
+							setVisited(true);
 							setShowIntroCard(false);
 						}}
 					/>
