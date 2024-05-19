@@ -33,4 +33,8 @@ Welcome to my Ollama Chat, this is an interface for the Official ollama CLI to m
 
 <br />
 
-You as well you need to install [Ollama](https://ollama.ai) and after you installed it, you can run your local server with this command `OLLAMA_ORIGINS=* OLLAMA_HOST=127.0.0.1:11435 ollama serve`.
+You as well you need to install [Ollama](https://ollama.ai) and after you installed it, you can run your local server with this command `OLLAMA_HOST=127.0.0.1:11435 ollama serve`.
+
+## Thanks
+
+This is fork of [Twan Luttik](https://github.com/ollama-interface/Ollama-Gui). Thanks for first implementation.
