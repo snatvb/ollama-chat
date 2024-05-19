@@ -112,7 +112,7 @@ export default memo(function InputPrompt() {
 				autoFocus
 				rows={4}
 				disabled={!connected}
-				placeholder="Your message..."
+				placeholder="Your message... (Ctrl+Enter to send)"
 				value={txt}
 				onChange={(e) => {
 					setTxt(e.currentTarget.value);
