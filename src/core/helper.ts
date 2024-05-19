@@ -1,7 +1,3 @@
-import { trimWhitespace } from '.';
-import { core } from './core';
-import { ModelTypes } from './types';
-
 function randomInt(min: number, max: number) {
 	return Math.floor(Math.random() * (max - min + 1) + min);
 }
@@ -15,54 +11,46 @@ export function generateRandomString(length: number): string {
 	return randomString;
 }
 
-export const createNewConversation = (model?: ModelTypes) => {
-	const id = generateRandomString(8);
-	core.conversations.patchObject({
-		[id]: { id, chatHistory: [], ctx: [], model: model ?? 'llama2' },
-	});
-	return id;
-};
+// export function extractTextAndCodeBlocks(
+// 	inputString: string,
+// ): { content: string; type: 'text' | 'code' }[] {
+// 	const codeBlockRegex = /```([\s\S]*?)```/g;
+// 	const matches = [];
+// 	let currentIndex = 0;
 
-export function extractTextAndCodeBlocks(
-	inputString: string,
-): { content: string; type: 'text' | 'code' }[] {
-	const codeBlockRegex = /```([\s\S]*?)```/g;
-	const matches = [];
-	let currentIndex = 0;
+// 	inputString.replace(codeBlockRegex, (match, codeBlock, index) => {
+// 		// Add the text before the code block to the array
+// 		if (index > currentIndex) {
+// 			const textBeforeCodeBlock = inputString
+// 				.substring(currentIndex, index)
+// 				.trim();
+// 			if (textBeforeCodeBlock.length > 0) {
+// 				matches.push({ content: textBeforeCodeBlock, type: 'text' });
+// 			}
+// 		}
 
-	inputString.replace(codeBlockRegex, (match, codeBlock, index) => {
-		// Add the text before the code block to the array
-		if (index > currentIndex) {
-			const textBeforeCodeBlock = inputString
-				.substring(currentIndex, index)
-				.trim();
-			if (textBeforeCodeBlock.length > 0) {
-				matches.push({ content: textBeforeCodeBlock, type: 'text' });
-			}
-		}
+// 		// Add the code block to the array
+// 		matches.push({
+// 			content: trimWhitespace(codeBlock),
+// 			type: 'code',
+// 			who: 'ollama',
+// 		});
 
-		// Add the code block to the array
-		matches.push({
-			content: trimWhitespace(codeBlock),
-			type: 'code',
-			who: 'ollama',
-		});
+// 		// Update the current index
+// 		currentIndex = index + match.length;
+// 		return match;
+// 	});
 
-		// Update the current index
-		currentIndex = index + match.length;
-		return match;
-	});
+// 	// Add any remaining text after the last code block
+// 	if (currentIndex < inputString.length) {
+// 		const textAfterLastCodeBlock = inputString.substring(currentIndex).trim();
+// 		if (textAfterLastCodeBlock.length > 0) {
+// 			matches.push({ content: textAfterLastCodeBlock, type: 'text' });
+// 		}
+// 	}
 
-	// Add any remaining text after the last code block
-	if (currentIndex < inputString.length) {
-		const textAfterLastCodeBlock = inputString.substring(currentIndex).trim();
-		if (textAfterLastCodeBlock.length > 0) {
-			matches.push({ content: textAfterLastCodeBlock, type: 'text' });
-		}
-	}
-
-	return matches as any;
-}
+// 	return matches as any;
+// }
 
 export type ResolvingPromise<T> = Promise<T> & {
 	resolve: (a: T) => void;

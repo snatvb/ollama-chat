@@ -10,7 +10,7 @@ export function useMigration() {
 	const [migrated, setMigrated] = useAtom(state.conversation.migrated);
 
 	useEffect(() => {
-		if (migrated) {
+		if (migrated || !core.visited._value) {
 			return;
 		}
 
