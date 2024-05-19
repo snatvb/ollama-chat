@@ -87,7 +87,7 @@ export function atomWithAsyncStorage<T>(
 export function atomPersist<T>(
 	key: string,
 	defaultValue: T,
-	toString: (value: T) => string = JSON.stringify,
+	toString: (value: T) => string | undefined = JSON.stringify,
 	fromString: (value: string) => T = JSON.parse,
 ) {
 	const initial = (() => {
@@ -107,7 +107,12 @@ export function atomPersist<T>(
 		(get) => get(item),
 		(_get, set, newValue: T) => {
 			set(item, newValue);
-			localStorage.setItem(key, toString(newValue));
+			const forSave = toString(newValue);
+			if (typeof forSave === 'string') {
+				localStorage.setItem(key, forSave);
+			} else {
+				localStorage.removeItem(key);
+			}
 		},
 	);
 

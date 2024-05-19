@@ -4,6 +4,7 @@ import Immutable from 'immutable';
 import { atomPersist, atomWithAsyncStorage, db } from './persist';
 import { store } from './store';
 import { generates } from './app';
+import { identity } from '../helper';
 
 export type Message = {
 	created_at: Date;
@@ -44,7 +45,12 @@ export async function loadConversationsFromDB(): Promise<Conversations> {
 }
 export const migrated = atomPersist('MIGRATED_FROM_LS', false, String, Boolean);
 
-const currentId = atomPersist('CURRENT_CHAT_ID', undefined, String, String);
+const currentId = atomPersist<string | undefined>(
+	'CURRENT_CHAT_ID',
+	undefined,
+	identity,
+	identity,
+);
 export const record = atomWithAsyncStorage(
 	async () => loadConversationsFromDB(),
 	async (value) => {

@@ -50,7 +50,7 @@ export default memo(function Header() {
 	});
 
 	return (
-		<div className="flex items-center justify-between w-full p-2">
+		<div className="flex items-center justify-between w-full p-2 dark:text-white">
 			<div className="flex items-center">
 				<div className="h-full flex items-center">
 					<Badge variant={connected ? 'secondary' : 'destructive'}>
