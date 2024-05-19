@@ -5,6 +5,7 @@ import { Markdown } from '@/components/markdown';
 import { Conversation } from '../state/conversation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import ollamaAvatar from '../assets/ollama_avatar.png';
+import { CopyButton } from '@/components/copy-button';
 
 export interface Props {
 	conversation: Conversation;
@@ -19,10 +20,10 @@ export const OllamaAvatarPrerender = (
 	</div>
 );
 
-export const ConversationBlock = memo(function ConversationBlock(p: Props) {
+export const ConversationBlock = memo(function ConversationBlock(props: Props) {
 	return (
 		<>
-			{p.conversation.chatHistory.map((item, index) => (
+			{props.conversation.chatHistory.map((item, index) => (
 				<div
 					key={index}
 					className={` relative w-full flex ${
@@ -44,20 +45,26 @@ export const ConversationBlock = memo(function ConversationBlock(p: Props) {
 												const { children, className, key } = props;
 												const match = /language-(\w+)/.exec(className || '');
 												return (
-													<CodeEditor
-														disabled={true}
-														contentEditable={false}
-														key={key}
-														className="bg-neutral-800 dark:bg-black rounded-md my-2"
-														language={match?.[1] ?? 'text'}
-														value={String(children)}
-														data-color-mode="dark"
-														style={{
-															fontSize: 12,
-															fontFamily:
-																'ui-monospace,SFMono-Regular,SF Mono,Consolas,Liberation Mono,Menlo,monospace',
-														}}
-													/>
+													<div className="relative group">
+														<CodeEditor
+															disabled={true}
+															contentEditable={false}
+															key={key}
+															className="bg-neutral-800 dark:bg-black rounded-md my-2"
+															language={match?.[1] ?? 'text'}
+															value={String(children)}
+															data-color-mode="dark"
+															style={{
+																fontSize: 12,
+																fontFamily:
+																	'ui-monospace,SFMono-Regular,SF Mono,Consolas,Liberation Mono,Menlo,monospace',
+															}}
+														/>
+														<CopyButton
+															className="absolute right-2 top-2 group-hover:opacity-100 opacity-0 transition-opacity"
+															value={String(children)}
+														/>
+													</div>
 												);
 											},
 										}}
