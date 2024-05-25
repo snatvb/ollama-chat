@@ -49,7 +49,7 @@ export const ConversationBlock = memo(function ConversationBlock(props: Props) {
 													const { children, className, key } = props;
 													const match = /language-(\w+)/.exec(className || '');
 													return (
-														<div className="relative group">
+														<div className="relative group/code">
 															<CodeEditor
 																disabled={true}
 																contentEditable={false}
@@ -65,7 +65,7 @@ export const ConversationBlock = memo(function ConversationBlock(props: Props) {
 																}}
 															/>
 															<CopyButton
-																className="absolute right-2 top-2 group-hover:opacity-100 opacity-0 transition-opacity"
+																className="absolute right-2 top-2 group-hover/code:opacity-100 opacity-0 transition-opacity"
 																value={String(children)}
 															/>
 														</div>
