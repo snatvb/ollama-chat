@@ -37,40 +37,45 @@ export const ConversationBlock = memo(function ConversationBlock(props: Props) {
 						{item.txt?.map((txtItem, txtIndex) => {
 							if (txtItem.type === 'text') {
 								return (
-									<Markdown
-										key={txtIndex}
-										className="text-left text-neutral-700 dark:text-neutral-300"
-										components={{
-											code(props) {
-												const { children, className, key } = props;
-												const match = /language-(\w+)/.exec(className || '');
-												return (
-													<div className="relative group">
-														<CodeEditor
-															disabled={true}
-															contentEditable={false}
-															key={key}
-															className="bg-neutral-800 dark:bg-black rounded-md my-2"
-															language={match?.[1] ?? 'text'}
-															value={String(children)}
-															data-color-mode="dark"
-															style={{
-																fontSize: 12,
-																fontFamily:
-																	'ui-monospace,SFMono-Regular,SF Mono,Consolas,Liberation Mono,Menlo,monospace',
-															}}
-														/>
-														<CopyButton
-															className="absolute right-2 top-2 group-hover:opacity-100 opacity-0 transition-opacity"
-															value={String(children)}
-														/>
-													</div>
-												);
-											},
-										}}
-									>
-										{txtItem.content}
-									</Markdown>
+									<div key={txtIndex} className="relative group">
+										<CopyButton
+											className="absolute right-0 top-0 group-hover:opacity-100 opacity-0 transition-opacity"
+											value={String(txtItem.content)}
+										/>
+										<Markdown
+											className="text-left text-neutral-700 dark:text-neutral-300"
+											components={{
+												code(props) {
+													const { children, className, key } = props;
+													const match = /language-(\w+)/.exec(className || '');
+													return (
+														<div className="relative group">
+															<CodeEditor
+																disabled={true}
+																contentEditable={false}
+																key={key}
+																className="bg-neutral-800 dark:bg-black rounded-md my-2"
+																language={match?.[1] ?? 'text'}
+																value={String(children)}
+																data-color-mode="dark"
+																style={{
+																	fontSize: 12,
+																	fontFamily:
+																		'ui-monospace,SFMono-Regular,SF Mono,Consolas,Liberation Mono,Menlo,monospace',
+																}}
+															/>
+															<CopyButton
+																className="absolute right-2 top-2 group-hover:opacity-100 opacity-0 transition-opacity"
+																value={String(children)}
+															/>
+														</div>
+													);
+												},
+											}}
+										>
+											{txtItem.content}
+										</Markdown>
+									</div>
 								);
 							}
 						})}
