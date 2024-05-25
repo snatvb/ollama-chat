@@ -6,7 +6,6 @@ import InputPrompt from './input-prompt';
 import Chat from './chat';
 import { useAtom } from 'jotai';
 import { state } from './state';
-import Migrator from './migrator';
 import { ErrorBoundary } from '@/components/error-boundry';
 import { AlertError } from '@/components/ui/alert';
 import Sidebar from './sidebar';
@@ -25,8 +24,6 @@ function HomePage() {
 
 	return (
 		<div className="flex flex-row h-full">
-			<Migrator />
-
 			<ErrorBoundary
 				fallback={
 					<AlertError>

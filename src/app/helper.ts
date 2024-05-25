@@ -1,4 +1,4 @@
-import { Model, core, ollamaRequest } from '@/core';
+import { Model, ollamaRequest } from '@/core';
 import { useSetAtom } from 'jotai';
 import { state } from './state';
 import { useCallback } from 'react';
@@ -8,10 +8,15 @@ import { toast } from '@/components/ui/use-toast';
 
 export async function tryConnect() {
 	try {
+		state.app.updateStatus('connecting');
 		await ollamaRequest('GET', '');
-		core.serverConnected.set(true);
+		state.app.updateStatus('connected');
 	} catch (error) {
-		core.serverConnected.set(false);
+		toast({
+			variant: 'destructive',
+			title: 'Error',
+			description: 'Failed to connect to the server',
+		});
 	}
 }
 
@@ -21,17 +26,6 @@ export async function isRunningUpdate() {
 		return true;
 	} catch (error) {
 		return false;
-	}
-}
-
-export async function updateModelsAvailability(): Promise<boolean> {
-	const res = await ollamaRequest('GET', 'api/tags');
-	if (res?.data?.models) {
-		core.installedModels.set(res.data.models);
-
-		return true;
-	} else {
-		throw 'No models has been found';
 	}
 }
 

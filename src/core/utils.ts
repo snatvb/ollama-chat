@@ -1,5 +1,5 @@
+import { state } from '@/app/state';
 import axios, { AxiosResponse } from 'axios';
-import { core } from '.';
 
 export type Model = {
 	digest: string;
@@ -25,7 +25,7 @@ export async function ollamaRequest<R = any>(
 	try {
 		const res = await axios({
 			method,
-			url: `${core.localAPI._value}/${path}`,
+			url: `${state.app.takeAPIUrl()}/${path}`,
 			data: c?.data,
 			headers: {
 				'Content-Type': 'application/json',
@@ -34,7 +34,7 @@ export async function ollamaRequest<R = any>(
 
 		return res;
 	} catch (error) {
-		core.serverConnected.set(false);
+		state.app.updateStatus('connecting');
 		throw error;
 	}
 }

@@ -4,7 +4,6 @@ import { TrashIcon } from '@radix-ui/react-icons';
 import { SelectModel } from './parts/SelectModel';
 import { SideInfoSheet } from './parts/SideInfoSheet';
 import { ModeToggle } from '@/components/mode-toggle';
-import { core } from '@/core';
 import { ConfirmChatClear } from './parts/ConfirmChatClear';
 import { memo, useEffect } from 'react';
 import { useRequestUpdateModels } from './helper';
@@ -27,17 +26,6 @@ export default memo(function Header() {
 	useEffect(() => {
 		if (connected) {
 			requestUpdateModels();
-			// try {
-			// 	updateModelsAvailability();
-			// } catch (error) {
-			// 	toast({
-			// 		variant: 'destructive',
-			// 		title: 'Something went wrong',
-			// 		description: String(error),
-			// 	});
-			// }
-		} else {
-			core.installedModels.reset();
 		}
 	}, [connected]);
 
