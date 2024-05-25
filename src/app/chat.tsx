@@ -39,7 +39,7 @@ export default memo(function Chat() {
 		chatRef.current?.scrollTo({
 			top: chatRef.current.scrollHeight,
 		});
-	}, [currentConversationId]);
+	}, [currentConversationId, currentConversation.value?.chatHistory.length]);
 
 	useEffect(() => {
 		function handleEcs(event: KeyboardEvent) {
