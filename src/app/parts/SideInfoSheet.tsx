@@ -14,12 +14,11 @@ import { OLLAMA_COMMAND } from '@/core';
 import { tryConnect } from '../helper';
 import { Badge } from '@/components/ui/badge';
 import { ConfirmModal } from '@/components/ConfirmModal';
-import { memo, useEffect, useRef, useState } from 'react';
+import { memo, useRef, useState } from 'react';
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import { state } from '../state';
 import { GitHubLogoIcon } from '@radix-ui/react-icons';
 import { SelectDefaultModel } from './select-default-model';
-import { invoke } from '@tauri-apps/api/tauri';
 
 const LocalAPIInput = memo(function LocalAPIInput({
 	loading,
@@ -72,29 +71,29 @@ export function SideInfoSheet({ loading }: Props) {
 
 	const setConversations = useSetAtom(state.conversation.record);
 
-	useEffect(() => {
-		let amountPressed = 0;
-		let timeoutId = 0;
-		function handleKeydown(event: KeyboardEvent) {
-			amountPressed++;
-			window.clearTimeout(timeoutId);
-			timeoutId = window.setTimeout(() => {
-				amountPressed = 0;
-			}, 500);
-			if (amountPressed !== 3) {
-				return;
-			}
-			amountPressed = 0;
-			if (event.code === 'Space' && event.ctrlKey) {
-				invoke('open_dev_tools');
-			}
-		}
-		document.addEventListener('keydown', handleKeydown);
-		return () => {
-			window.clearTimeout(timeoutId);
-			document.removeEventListener('keydown', handleKeydown);
-		};
-	}, []);
+	// useEffect(() => {
+	// 	let amountPressed = 0;
+	// 	let timeoutId = 0;
+	// 	function handleKeydown(event: KeyboardEvent) {
+	// 		amountPressed++;
+	// 		window.clearTimeout(timeoutId);
+	// 		timeoutId = window.setTimeout(() => {
+	// 			amountPressed = 0;
+	// 		}, 500);
+	// 		if (amountPressed !== 3) {
+	// 			return;
+	// 		}
+	// 		amountPressed = 0;
+	// 		if (event.code === 'Space' && event.ctrlKey) {
+	// 			invoke('open_dev_tools');
+	// 		}
+	// 	}
+	// 	document.addEventListener('keydown', handleKeydown);
+	// 	return () => {
+	// 		window.clearTimeout(timeoutId);
+	// 		document.removeEventListener('keydown', handleKeydown);
+	// 	};
+	// }, []);
 
 	function resetConversations() {
 		setConversations((r) => r.clear());
