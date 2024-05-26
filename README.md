@@ -9,6 +9,7 @@ Welcome to my Ollama Chat, this is an interface for the Official ollama CLI to m
 - Able to change the host where ollama is running at 🖥️
 - Persistance 📀
 - Light & Dark Theme 🌗
+- Image Recognizing 👀
 
 <br />
 
