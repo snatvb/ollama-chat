@@ -146,20 +146,6 @@ export const ollama = {
 			}).catch(reject);
 		});
 	},
-	tokenize(prompt: string, model: string) {
-		// return new Promise<{ embeddings: string }>((resolve, reject) => {
-		return fetch(`${state.app.takeAPIUrl()}/api/show`, {
-			body: JSON.stringify({
-				model,
-				prompt,
-			}),
-			headers: {
-				'Content-Type': 'application/json',
-			},
-			method: 'POST',
-		}).then((r) => r.json());
-		// });
-	},
 };
 
 export interface OllamaResult {
