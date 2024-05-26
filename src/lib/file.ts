@@ -11,13 +11,16 @@ export function readAs64(file: File | Blob): Promise<string> {
 	});
 }
 
-export function fitSize(
+function fitSize(
 	width: number,
 	height: number,
 	maxWidth: number,
 	maxHeight: number,
 ): { width: number; height: number } {
 	const ratio = Math.min(maxWidth / width, maxHeight / height);
+	if (ratio >= 1) {
+		return { width, height };
+	}
 	return { width: width * ratio, height: height * ratio };
 }
 
@@ -29,15 +32,16 @@ export function resizeImage(
 	return new Promise((resolve, reject) => {
 		const img = new Image();
 		img.onload = () => {
-			if (img.width === width && img.height === height) {
+			const size = fitSize(img.width, img.height, width, height);
+			if (img.width <= size.width && img.height <= size.height) {
 				resolve(file);
 				return;
 			}
 			const canvas = document.createElement('canvas');
 			const ctx = canvas.getContext('2d')!;
-			canvas.width = width;
-			canvas.height = height;
-			ctx.drawImage(img, 0, 0, width, height);
+			canvas.width = size.width;
+			canvas.height = size.height;
+			ctx.drawImage(img, 0, 0, size.width, size.height);
 			canvas.toBlob((blob) => {
 				if (!blob) {
 					reject(new Error('Failed to resize image'));

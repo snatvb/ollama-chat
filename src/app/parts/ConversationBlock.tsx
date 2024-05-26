@@ -43,7 +43,7 @@ export const ConversationBlock = memo(function ConversationBlock(props: Props) {
 										<img
 											src={txtItem.image}
 											alt="attachment"
-											className="w-full rounded-md"
+											className="max-w-full rounded-md ml-auto mr-auto"
 										/>
 										<div className="mt-2">
 											<Text content={txtItem.content} />
