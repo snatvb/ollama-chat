@@ -2,7 +2,7 @@ import { memo, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ReloadIcon } from '@radix-ui/react-icons';
 import { Textarea } from '@/components/ui/textarea';
-import { SendIcon } from 'lucide-react';
+import { Paperclip, SendIcon, X } from 'lucide-react';
 import { convertTextToJson, ollamaGenerate } from '@/core';
 import { toast } from '@/components/ui/use-toast';
 import { state } from './state';
@@ -11,11 +11,22 @@ import {
 	appendHistoryConversation,
 	updateConversation,
 } from './state/conversation';
+import { cn } from '@/lib/utils';
+import { Card, CardContent } from '@/components/ui/card';
+import { readAs64, resizeImage } from '@/lib/file';
+import { match } from 'ts-pattern';
 
 const drafts = new Map<string, string>();
 
+type Attach = {
+	type: 'image';
+	data: string;
+};
+
 export default memo(function InputPrompt() {
 	const promptRef = useRef<HTMLTextAreaElement>(null);
+	const [fileHandle, setFileHandle] = useState(false);
+	const [attach, setAttach] = useState<Attach>();
 	const connected = useAtomValue(state.app.connected);
 	const setLastResponseTime = useSetAtom(state.app.lastResponseTime);
 	const currentChat = useAtomValue(state.conversation.current.chat);
@@ -105,8 +116,80 @@ export default memo(function InputPrompt() {
 		return null;
 	}
 
+	function handleDragOver(e: React.DragEvent<HTMLDivElement>) {
+		e.preventDefault();
+		e.stopPropagation();
+		setFileHandle(true);
+	}
+
+	// Function to handle drop event
+	function handleDrop(e: React.DragEvent<HTMLDivElement>) {
+		e.preventDefault();
+		e.stopPropagation();
+		const { files } = e.dataTransfer;
+		const file = files[0];
+		const extensions = ['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp'];
+		if (extensions.some((ext) => file.name.endsWith(ext))) {
+			resizeImage(file, 1280, 720)
+				.then(readAs64)
+				.then((data) => {
+					setAttach({
+						type: 'image',
+						data,
+					});
+				})
+				.catch((e) => {
+					toast({
+						variant: 'destructive',
+						title: 'Failed',
+						description: e?.message,
+					});
+				});
+		} else {
+			toast({
+				variant: 'destructive',
+				title: 'Failed',
+				description: 'Invalid file format',
+			});
+		}
+
+		// const reader = new FileReader();
+		// reader.onload = () => {
+		// 	const content = reader.result as string;
+		// 	// console.log(content);
+		// };
+		// reader.readAsDataURL(file);
+		setFileHandle(false);
+	}
+
 	return (
-		<div className="flex flex-row w-full p-4 ">
+		<div
+			className="flex flex-row w-full p-4 relative dark:text-white space-x-2"
+			onDragOver={handleDragOver}
+			onDrop={handleDrop}
+			onDragLeave={() => setFileHandle(false)}
+		>
+			<div>
+				{match(attach)
+					.with({ type: 'image' }, ({ data }) => (
+						<div className="relative">
+							<Button
+								variant="destructive"
+								onClick={() => setAttach(undefined)}
+								className="absolute -right-1 -top-1 w-4 h-4"
+								size="icon"
+							>
+								<X className="w-3 h-3" />
+							</Button>
+							<img src={data} width={64} />
+						</div>
+					))
+					.otherwise(() => (
+						<Button variant="secondary" size="icon">
+							<Paperclip className="w-4 h-4" />
+						</Button>
+					))}
+			</div>
 			<Textarea
 				ref={promptRef}
 				autoFocus
@@ -117,7 +200,9 @@ export default memo(function InputPrompt() {
 				onChange={(e) => {
 					setTxt(e.currentTarget.value);
 				}}
-				className="dark:bg-black dark:text-zinc-300 p-1 px-2 max-h-[300px] flex-grow flex border dark:border-neutral-800"
+				className={
+					'dark:bg-black dark:text-zinc-300 p-1 px-2 max-h-[300px] flex-grow flex border dark:border-neutral-800'
+				}
 				onKeyDown={(e) => {
 					if (e.key === 'Enter' && e.ctrlKey) {
 						submitPrompt();
@@ -129,7 +214,7 @@ export default memo(function InputPrompt() {
 				variant="secondary"
 				disabled={txt === '' || disabled}
 				onClick={() => submitPrompt()}
-				className="flex-shrink-0 ml-2 h-full w-20"
+				className="flex-shrink-0 h-full w-20"
 			>
 				{generating ? (
 					<ReloadIcon className="h-4 w-4 animate-spin" />
@@ -137,6 +222,20 @@ export default memo(function InputPrompt() {
 					<SendIcon className="h-4 w-4" />
 				)}
 			</Button>
+
+			<Card
+				className={cn(
+					`absolute left-0 top-0 w-full h-full pointer-events-none border-2 border-dashed bg-muted hover:cursor-pointer hover:border-muted-foreground/50`,
+					'opacity-0 transition-opacity',
+					fileHandle && 'opacity-1',
+				)}
+			>
+				<CardContent className="flex flex-col w-full h-full items-center justify-center space-y-2 px-2 py-4 text-xs">
+					<div className="flex items-center justify-center text-muted-foreground">
+						<span className="font-medium">Drag File to handle</span>
+					</div>
+				</CardContent>
+			</Card>
 		</div>
 	);
 });

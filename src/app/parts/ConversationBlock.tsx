@@ -46,14 +46,13 @@ export const ConversationBlock = memo(function ConversationBlock(props: Props) {
 											className="text-left text-neutral-700 dark:text-neutral-300"
 											components={{
 												code(props) {
-													const { children, className, key } = props;
+													const { children, className } = props;
 													const match = /language-(\w+)/.exec(className || '');
 													return (
 														<div className="relative group/code">
 															<CodeEditor
 																disabled={true}
 																contentEditable={false}
-																key={key}
 																className="bg-neutral-800 dark:bg-black rounded-md my-2"
 																language={match?.[1] ?? 'text'}
 																value={String(children)}
