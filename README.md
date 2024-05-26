@@ -16,6 +16,21 @@ Welcome to my Ollama Chat, this is an interface for the Official ollama CLI to m
 
 <br />
 
+## Recognizing
+
+<img src="./.github/docs/recognizing.png" />
+<img src="./.github/docs/recognizing-done.png" />
+
+For use it requires to pull [llava](https://ollama.com/library/llava).
+
+Use this command:
+
+```sh
+ollama pull llava:13b
+```
+
+After open **Settings & Info** and choose vision model
+
 ## How to build on your machine
 
 ### Requirements
