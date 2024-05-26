@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { ReloadIcon } from '@radix-ui/react-icons';
 import { Textarea } from '@/components/ui/textarea';
 import { Paperclip, SendIcon, X } from 'lucide-react';
-import { convertTextToJson, ollamaGenerate } from '@/core';
+import { ollama } from '@/core';
 import { toast } from '@/components/ui/use-toast';
 import { state } from './state';
 import { useAtomValue, useSetAtom } from 'jotai';
@@ -60,31 +60,132 @@ export default memo(function InputPrompt() {
 			return;
 		}
 
+		// if (attach?.type === 'image' && visionModel) {
+		// 	console.log(attach.data);
+		// 	console.log(visionModel);
+		// 	const res = await ollamaRecognize(txt, visionModel, [
+		// 		attach.data.replace('data:image/png;base64,', ''),
+		// 	]);
+
+		// 	const stream = res;
+		// 	console.log(stream);
+
+		// 	stream.on('data', (data) => {
+		// 		console.log(data);
+		// 	});
+
+		// 	stream.on('end', () => {
+		// 		console.log('stream done');
+		// 	});
+		// 	setTxt('');
+		// 	return;
+		// }
+
 		try {
+			// fetch(`${state.app.takeAPIUrl()}/api/generate`, {
+			// 	body: JSON.stringify({
+			// 		model: chat.model,
+			// 		prompt: txt,
+			// 		context: chat.ctx,
+			// 		stream: true,
+			// 	}),
+			// 	headers: {
+			// 		'Content-Type': 'application/json',
+			// 	},
+			// 	method: 'POST',
+			// })
+			// 	.then((response) => {
+			// 		if (response.ok && response.body) {
+			// 			const reader = response.body
+			// 				.pipeThrough(new TextDecoderStream())
+			// 				.getReader();
+
+			// 			function readStream() {
+			// 				return reader.read().then(({ value, done }) => {
+			// 					if (done) {
+			// 						reader.cancel();
+			// 						return Promise.resolve();
+			// 					}
+
+			// 					// parse the data
+			// 					const data = /{.*}/.exec(value);
+			// 					if (!data || !data[0]) {
+			// 						return readStream();
+			// 					}
+
+			// 					console.log(data[0]);
+
+			// 					// do something if success
+			// 					// and cancel the stream
+			// 					// reader.cancel().catch(() => null);
+			// 					return readStream();
+			// 				});
+			// 			}
+			// 			return readStream();
+			// 		} else {
+			// 			return Promise.reject(response);
+			// 		}
+			// 	})
+			// 	.then(() => {
+			// 		console.log('done');
+			// 	});
+			// axios({
+			// 	method: 'POST',
+			// 	url: `${state.app.takeAPIUrl()}/api/generate`,
+			// 	data: {
+			// 		model: chat.model,
+			// 		prompt: txt,
+			// 		context: chat.ctx,
+			// 		stream: true,
+			// 	},
+			// 	// headers: {
+			// 	// 	'Content-Type': 'application/json',
+			// 	// },
+			// 	responseType: 'stream',
+			// }).then((res) => {
+			// 	console.log(res);
+			// });
+
 			setTxt('');
-			setGenerates((g) => g.add(chat.id));
+			setGenerates((g) => g.set(chat.id, ''));
 
 			appendHistoryConversation(chat.id, {
 				created_at: new Date(),
 				txt: [{ content: txt, type: 'text' }],
 				who: 'me',
 			});
-			const res = await ollamaGenerate(txt, chat.model, chat.ctx);
-			const convertedToJson = convertTextToJson(res);
-			const txtMsg = convertedToJson.map((item) => item.response).join('');
 
-			const updatedCtx = convertedToJson[convertedToJson.length - 1].context;
+			let response = '';
+			const result = await ollama.generate(
+				{
+					model: chat.model,
+					prompt: txt,
+					context: chat.ctx,
+				},
+				(chunk) => {
+					setGenerates((g) => {
+						response += chunk.response;
+						return g.set(chat.id, response);
+					});
+				},
+			);
+
+			// const res = await ollamaGenerate(txt, chat.model, chat.ctx);
+			// const convertedToJson = convertTextToJson(res);
+			// const txtMsg = convertedToJson.map((item) => item.response).join('');
+
+			const updatedCtx = result.context;
 			if (!updatedCtx) {
 				throw new Error('No context found');
 			}
 
 			updateConversation(chat.id, (chat) => ({
 				...chat,
-				ctx: updatedCtx,
+				ctx: chat.ctx.concat(updatedCtx),
 				chatHistory: [
 					...chat.chatHistory,
 					{
-						txt: [{ content: txtMsg, type: 'text' }],
+						txt: [{ content: response, type: 'text' }],
 						who: 'ollama',
 						created_at: new Date(),
 					},

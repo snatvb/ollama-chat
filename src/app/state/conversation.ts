@@ -85,6 +85,13 @@ export const current = {
 		}
 		return get(generates).has(id);
 	}),
+	generatingText: atom((get) => {
+		const id = get(currentId);
+		if (!id) {
+			return undefined;
+		}
+		return get(generates).get(id);
+	}),
 	model: selectAtom(currentChat, (chat) => chat.value?.model),
 	chat: currentChat,
 };

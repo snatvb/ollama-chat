@@ -5,13 +5,13 @@ import {
 	OllamaAvatarPrerender,
 } from './parts/ConversationBlock';
 import { convertTextToJson, ollamaGenerate } from '@/core';
-import { Skeleton } from '@/components/ui/skeleton';
 import dayjs from 'dayjs';
 import { useAtom, useAtomValue } from 'jotai';
 import { state } from './state';
 import { Conversation, updateConversation } from './state/conversation';
 import { ReloadIcon } from '@radix-ui/react-icons';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const states: Record<string, { state: 'loading' }> = {};
 
@@ -32,7 +32,6 @@ export default memo(function Chat() {
 	const [currentConversationId, setCurrentConversationId] = useAtom(
 		state.conversation.current.id,
 	);
-	const generating = useAtomValue(state.conversation.current.generating);
 	const currentConversation = useAtomValue(state.conversation.current.chat);
 
 	useEffect(() => {
@@ -128,22 +127,36 @@ export default memo(function Chat() {
 								No message
 							</p>
 						))}
-					{generating && (
-						<div className={`relative w-full flex`}>
-							<p className="mt-2.5 text-neutral-400">{OllamaAvatarPrerender}</p>
-							<div
-								className={`flex flex-col mb-10 bg-zinc-100 dark:bg-zinc-900 border-solid border-neutral-200 dark:border-neutral-800 border rounded-xl p-2 w-[80%]`}
-							>
-								<Skeleton className="w-full h-10 animate-pulse" />
-
-								<p className="absolute bottom-[20px] text-xs text-neutral-500">
-									{dayjs(Date.now()).format('HH:MM:ss')}
-								</p>
-							</div>
-						</div>
-					)}
+					<Generating />
 				</ScrollArea>
 			</div>
 		</div>
 	);
 });
+
+function Generating() {
+	const generating = useAtomValue(state.conversation.current.generatingText);
+
+	if (generating === undefined) {
+		return null;
+	}
+
+	return (
+		<div className={`relative w-full flex dark:text-white`}>
+			<p className="mt-2.5 text-neutral-400">{OllamaAvatarPrerender}</p>
+			<div
+				className={`flex flex-col mb-10 bg-zinc-100 dark:bg-zinc-900 border-solid border-neutral-200 dark:border-neutral-800 border rounded-xl p-2 w-[80%]`}
+			>
+				{generating.length > 0 ? (
+					generating
+				) : (
+					<Skeleton className="w-full h-10 animate-pulse" />
+				)}
+
+				<p className="absolute bottom-[20px] text-xs text-neutral-500">
+					{dayjs(Date.now()).format('HH:MM:ss')}
+				</p>
+			</div>
+		</div>
+	);
+}
