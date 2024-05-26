@@ -67,8 +67,11 @@ export default memo(function InputPrompt() {
 
 			type MsgContent = state.conversation.MsgContent;
 			type Generate = state.app.Generate;
-			const [params, mineMessage, generateItem] = match([attach, visionModel])
-				.returnType<[GenerateParams, MsgContent, Generate]>()
+			const [params, mineMessage, generateItem, type] = match([
+				attach,
+				visionModel,
+			])
+				.returnType<[GenerateParams, MsgContent, Generate, 'text' | 'image']>()
 				.with(
 					[
 						{ type: 'image', data: P.select('image') },
@@ -86,6 +89,7 @@ export default memo(function InputPrompt() {
 							image,
 						},
 						{ type: 'image', text: '' },
+						'image',
 					],
 				)
 				.otherwise(() => [
@@ -96,6 +100,7 @@ export default memo(function InputPrompt() {
 					},
 					{ content: txt, type: 'text' },
 					{ type: 'text', text: '' },
+					'text',
 				]);
 
 			setGenerates((g) => g.set(chat.id, generateItem));
@@ -121,7 +126,7 @@ export default memo(function InputPrompt() {
 
 			updateConversation(chat.id, (chat) => ({
 				...chat,
-				ctx: chat.ctx.concat(updatedCtx),
+				ctx: type === 'image' ? chat.ctx : chat.ctx.concat(updatedCtx),
 				chatHistory: [
 					...chat.chatHistory,
 					{
