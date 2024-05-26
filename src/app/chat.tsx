@@ -13,6 +13,7 @@ import { ReloadIcon } from '@radix-ui/react-icons';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EyesLookingFor } from '@/components/eyes-looking-for';
+import { useEvent } from '@/hooks/use-event';
 
 const states: Record<string, { state: 'loading' }> = {};
 
@@ -36,10 +37,14 @@ export default memo(function Chat() {
 	const currentConversation = useAtomValue(state.conversation.current.chat);
 	const generating = useAtomValue(state.conversation.current.generating);
 
-	useEffect(() => {
+	const scroll = useEvent(() =>
 		chatRef.current?.scrollTo({
 			top: chatRef.current.scrollHeight,
-		});
+		}),
+	);
+
+	useEffect(() => {
+		scroll();
 	}, [currentConversationId, currentConversation.value?.chatHistory.length]);
 
 	useEffect(() => {
@@ -133,15 +138,25 @@ export default memo(function Chat() {
 								No message
 							</p>
 						))}
-					<Generating />
+					<Generating onGenerate={scroll} />
 				</ScrollArea>
 			</div>
 		</div>
 	);
 });
 
-function Generating() {
+const Generating = memo(function Generating({
+	onGenerate,
+}: {
+	onGenerate?: () => void;
+}) {
 	const generating = useAtomValue(state.conversation.current.generatingText);
+
+	useEffect(() => {
+		if (generating !== undefined) {
+			onGenerate?.();
+		}
+	}, [generating, onGenerate]);
 
 	if (generating === undefined) {
 		return null;
@@ -181,4 +196,4 @@ function Generating() {
 			</div>
 		</div>
 	);
-}
+});
