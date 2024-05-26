@@ -36,59 +36,75 @@ export const ConversationBlock = memo(function ConversationBlock(props: Props) {
 					>
 						{item.txt?.map((txtItem, txtIndex) => {
 							if (txtItem.type === 'text') {
+								return <Text key={txtIndex} content={txtItem.content} />;
+							} else if (txtItem.type === 'image') {
 								return (
 									<div key={txtIndex} className="relative group">
-										<CopyButton
-											className="absolute right-0 top-0 group-hover:opacity-100 opacity-0 transition-opacity"
-											value={String(txtItem.content)}
+										<img
+											src={txtItem.image}
+											alt="attachment"
+											className="max-w-full rounded-md ml-auto mr-auto"
 										/>
-										<Markdown
-											className="text-left text-neutral-700 dark:text-neutral-300"
-											components={{
-												code(props) {
-													const { children, className, key } = props;
-													const match = /language-(\w+)/.exec(className || '');
-													return (
-														<div className="relative group/code">
-															<CodeEditor
-																disabled={true}
-																contentEditable={false}
-																key={key}
-																className="bg-neutral-800 dark:bg-black rounded-md my-2"
-																language={match?.[1] ?? 'text'}
-																value={String(children)}
-																data-color-mode="dark"
-																style={{
-																	fontSize: 12,
-																	fontFamily:
-																		'ui-monospace,SFMono-Regular,SF Mono,Consolas,Liberation Mono,Menlo,monospace',
-																}}
-															/>
-															<CopyButton
-																className="absolute right-2 top-2 group-hover/code:opacity-100 opacity-0 transition-opacity"
-																value={String(children)}
-															/>
-														</div>
-													);
-												},
-											}}
-										>
-											{txtItem.content}
-										</Markdown>
+										<div className="mt-2">
+											<Text content={txtItem.content} />
+										</div>
 									</div>
 								);
 							}
 						})}
 
-						<p className="absolute bottom-[20px] text-xs text-neutral-500">
+						<div className="absolute bottom-[20px] text-xs text-neutral-500">
 							{dayjs(item.created_at).format('HH:MM:ss')}
-						</p>
+						</div>
 					</div>
 					{item.who === 'me' && (
-						<p className="ml-2 mt-2.5 text-neutral-400">You</p>
+						<div className="ml-2 mt-2.5 text-neutral-400">You</div>
 					)}
 				</div>
 			))}
 		</>
+	);
+});
+
+const Text = memo(function Text({ content }: { content: string }) {
+	return (
+		<div className="relative group">
+			<CopyButton
+				className="absolute right-0 top-0 group-hover:opacity-100 opacity-0 transition-opacity"
+				value={content}
+			/>
+			<Markdown
+				className="text-left text-neutral-700 dark:text-neutral-300"
+				components={{
+					code(props) {
+						const { children, className } = props;
+						const match = /language-(\w+)/.exec(className || '');
+						return (
+							<div className="relative group/code">
+								<CodeEditor
+									disabled={true}
+									contentEditable={false}
+									className="bg-neutral-800 dark:bg-black rounded-md my-2"
+									language={match?.[1] ?? 'text'}
+									value={String(children)}
+									data-color-mode="dark"
+									style={{
+										fontSize: 12,
+										fontFamily:
+											'ui-monospace,SFMono-Regular,SF Mono,Consolas,Liberation Mono,Menlo,monospace',
+									}}
+								/>
+								<CopyButton
+									className="absolute right-2 top-2 group-hover/code:opacity-100 opacity-0 transition-opacity"
+									value={content}
+								/>
+							</div>
+						);
+					},
+				}}
+			>
+				{content}
+			</Markdown>
+		</div>
 	);
 });

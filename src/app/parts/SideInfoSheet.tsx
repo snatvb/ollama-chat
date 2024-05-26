@@ -18,7 +18,7 @@ import { memo, useRef, useState } from 'react';
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import { state } from '../state';
 import { GitHubLogoIcon } from '@radix-ui/react-icons';
-import { SelectDefaultModel } from './select-default-model';
+import { SelectDefaultModel, SelectVisionModel } from './select-default-model';
 
 const LocalAPIInput = memo(function LocalAPIInput({
 	loading,
@@ -174,6 +174,10 @@ export function SideInfoSheet({ loading }: Props) {
 							<div className="mt-2 w-full flex items-center">
 								<Label className="shrink-0 pr-2">Default Model:</Label>
 								<SelectDefaultModel />
+							</div>
+							<div className="mt-2 w-full flex items-center">
+								<Label className="shrink-0 pr-2">Vision Model:</Label>
+								<SelectVisionModel />
 							</div>
 						</div>
 						<div className="flex flex-col justify-self-end">

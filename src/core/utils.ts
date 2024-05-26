@@ -59,6 +59,95 @@ export async function ollamaGenerate(
 	}
 }
 
+function fetchOllama(
+	body: string,
+	endpoint: string,
+	onProgress: (chunk: string) => void,
+) {
+	return fetch(`${state.app.takeAPIUrl()}/api/${endpoint}`, {
+		body,
+		headers: {
+			'Content-Type': 'application/json',
+		},
+		method: 'POST',
+	}).then((response) => {
+		if (response.ok && response.body) {
+			const reader = response.body
+				.pipeThrough(new TextDecoderStream())
+				.getReader();
+
+			function readStream(): Promise<string | undefined> {
+				return reader.read().then(({ value, done }) => {
+					if (done) {
+						reader.cancel();
+						return Promise.resolve(value);
+					}
+
+					// parse the data
+					const data = /{.*}/.exec(value);
+					if (!data || !data[0]) {
+						return readStream();
+					}
+
+					onProgress(data[0]);
+
+					// do something if success
+					// and cancel the stream
+					// reader.cancel().catch(() => null);
+					return readStream();
+				});
+			}
+			return readStream();
+		} else {
+			return Promise.reject(response);
+		}
+	});
+}
+
+export type Peace = {
+	model: string;
+	created_at: string;
+	response: string;
+	done: false;
+};
+export type Done = {
+	model: string;
+	created_at: string;
+	response: '';
+	done: true;
+	context: number[];
+	total_duration: number;
+	load_duration: number;
+	prompt_eval_duration: number;
+	eval_count: number;
+	eval_duration: number;
+};
+
+type Chunk = Peace | Done;
+
+export type GenerateParams = {
+	model: string;
+	prompt: string;
+	stream?: boolean;
+	images?: string[];
+	context?: number[];
+};
+
+export const ollama = {
+	generate(params: GenerateParams, onProgress: (peace: Peace) => void) {
+		return new Promise<Done>((resolve, reject) => {
+			fetchOllama(JSON.stringify(params), 'generate', (chunk) => {
+				const item: Chunk = JSON.parse(chunk);
+				if (item.done) {
+					resolve(item);
+				} else {
+					onProgress(item);
+				}
+			}).catch(reject);
+		});
+	},
+};
+
 export interface OllamaResult {
 	model: string;
 	created_at: string;

@@ -6,12 +6,20 @@ import { store } from './store';
 import { generates } from './app';
 import { identity } from '../helper';
 
+export type MsgContent =
+	| {
+			content: string;
+			type: 'text';
+	  }
+	| {
+			type: 'image';
+			content: string;
+			image: string;
+	  };
+
 export type Message = {
 	created_at: Date;
-	txt: {
-		content: string;
-		type: 'text';
-	}[];
+	txt: MsgContent[];
 	who: 'ollama' | 'me';
 	name?: string;
 };
@@ -84,6 +92,13 @@ export const current = {
 			return false;
 		}
 		return get(generates).has(id);
+	}),
+	generatingText: atom((get) => {
+		const id = get(currentId);
+		if (!id) {
+			return undefined;
+		}
+		return get(generates).get(id);
 	}),
 	model: selectAtom(currentChat, (chat) => chat.value?.model),
 	chat: currentChat,

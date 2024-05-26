@@ -7,7 +7,16 @@ import { store } from './store';
 export type ConnectionStatus = 'connecting' | 'disconnected' | 'connected';
 
 export const lastResponseTime = atom<number | undefined>(undefined);
-export const generates = atom(Immutable.Set<string>());
+export type Generate =
+	| {
+			type: 'text';
+			text: string;
+	  }
+	| {
+			type: 'image';
+			text: string;
+	  };
+export const generates = atom(Immutable.Map<string, Generate>());
 export const connectionStatus = atom<ConnectionStatus>('connecting');
 export const connected = atom((get) => get(connectionStatus) === 'connected');
 export const visited = atomPersist(
@@ -16,10 +25,27 @@ export const visited = atomPersist(
 	String,
 	(x) => x === 'true',
 );
-export const models = atom<
-	{ status: 'loading' } | { status: 'loaded'; value: Immutable.List<Model> }
->({ status: 'loading' });
+
+export type ModelsAtom =
+	| {
+			status: 'loading';
+	  }
+	| {
+			status: 'loaded';
+			value: Immutable.List<Model>;
+	  };
+
+export const models = atom<ModelsAtom>({ status: 'loading' });
+export const visionModels = atom<ModelsAtom>({ status: 'loading' });
+
 export const model = atomPersist('OLLAMA_MODEL', undefined, String, String);
+export const visionModel = atomPersist(
+	'OLLAMA_VISION_MODEL',
+	undefined,
+	String,
+	String,
+);
+
 export const localAPI = atomPersist(
 	'OLLAMA_LOCAL_API',
 	'http://127.0.0.1:11435',

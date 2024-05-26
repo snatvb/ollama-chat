@@ -44,7 +44,8 @@
 				"resizable": true,
 				"title": "Ollama Chat",
 				"width": 1050,
-				"height": 750
+				"height": 750,
+				"fileDropEnabled": false
 			}
 		]
 	}

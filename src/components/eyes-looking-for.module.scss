@@ -1,0 +1,71 @@
+$bg: #eae0ce;
+$cubic: cubic-bezier(0.785, 0.135, 0.15, 0.86);
+
+.eyes {
+	display: flex;
+	color: darken($bg, 10);
+	font-weight: 400;
+	margin-bottom: 0;
+
+	.eye {
+		position: relative;
+		margin: auto;
+		top: 0;
+		bottom: 0;
+		background: #fff;
+		width: 1em;
+		height: 1em;
+		border-radius: 50%;
+		display: inline-block;
+		overflow: hidden;
+
+		&:before {
+			content: '';
+			position: absolute;
+			margin: auto;
+			width: 0.3em;
+			height: 0.3em;
+			left: 0;
+			right: 0;
+			top: 0;
+			bottom: 0;
+			border-radius: 50%;
+			background: rgba(20, 20, 20, 1);
+		}
+
+		&:before {
+			animation: anim 4s $cubic infinite;
+		}
+	}
+}
+
+@keyframes anim {
+	0%,
+	10% {
+		top: 30%;
+	}
+	10%,
+	20% {
+		top: 40%;
+	}
+	20%,
+	30% {
+		left: 40%;
+	}
+	30%,
+	40% {
+		left: -40%;
+	}
+	50%,
+	100% {
+		top: 30%;
+	}
+	70%,
+	90% {
+		left: 30%;
+	}
+	90%,
+	100% {
+		left: 0%;
+	}
+}

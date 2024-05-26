@@ -1,7 +1,6 @@
 import { memo } from 'react';
-import { useAtom, useAtomValue } from 'jotai';
+import { PrimitiveAtom, useAtom, useAtomValue } from 'jotai';
 import { state } from '../state';
-import { ReloadIcon } from '@radix-ui/react-icons';
 import {
 	Select,
 	SelectContent,
@@ -11,16 +10,21 @@ import {
 	SelectTrigger,
 } from '@/components/ui/select';
 import { P, match } from 'ts-pattern';
+import { Loader2 } from 'lucide-react';
 
-export const SelectModelsContent = memo(function SelectModelsContent() {
-	const models = useAtomValue(state.app.models);
+export const SelectModelsContent = memo(function SelectModelsContent({
+	modelsAtom = state.app.models,
+}: {
+	modelsAtom?: PrimitiveAtom<state.app.ModelsAtom>;
+}) {
+	const models = useAtomValue(modelsAtom);
 	return (
 		<SelectContent>
 			<SelectGroup>
 				{match(models)
 					.with({ status: 'loading' }, () => (
 						<SelectLabel className="flex w-full items-center justify-center">
-							<ReloadIcon className="h-4 w-4 animate-spin" />
+							<Loader2 className="h-4 w-4 animate-spin" />
 						</SelectLabel>
 					))
 					.with(
@@ -66,6 +70,25 @@ export const SelectDefaultModel = memo(function SelectDefaultModel(
 				{model ?? 'Select a Model'}
 			</SelectTrigger>
 			<SelectModelsContent />
+		</Select>
+	);
+});
+
+export const SelectVisionModel = memo(function SelectVisionModel(props: Props) {
+	const [model, setModel] = useAtom(state.app.visionModel);
+	const tutorial = useAtomValue(state.tutorial.element);
+
+	const handleValueChange = props.onValueChange ?? setModel;
+
+	return (
+		<Select value={model} onValueChange={handleValueChange}>
+			<SelectTrigger className="w-full whitespace-nowrap relative">
+				{tutorial === 'model' && (
+					<span className="animate-ping absolute inline-flex w-1/2 h-1/2 left-1/4 rounded-sm bg-sky-400 opacity-75" />
+				)}
+				{model ?? 'Select a Model'}
+			</SelectTrigger>
+			<SelectModelsContent modelsAtom={state.app.visionModels} />
 		</Select>
 	);
 });
