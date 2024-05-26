@@ -26,6 +26,7 @@ type Attach = {
 export default memo(function InputPrompt() {
 	const promptRef = useRef<HTMLTextAreaElement>(null);
 	const [fileHandle, setFileHandle] = useState(false);
+	const visionModel = useAtomValue(state.app.visionModel);
 	const [attach, setAttach] = useState<Attach>();
 	const connected = useAtomValue(state.app.connected);
 	const setLastResponseTime = useSetAtom(state.app.lastResponseTime);
@@ -117,6 +118,9 @@ export default memo(function InputPrompt() {
 	}
 
 	function handleDragOver(e: React.DragEvent<HTMLDivElement>) {
+		if (!visionModel) {
+			return;
+		}
 		e.preventDefault();
 		e.stopPropagation();
 		setFileHandle(true);
@@ -124,6 +128,9 @@ export default memo(function InputPrompt() {
 
 	// Function to handle drop event
 	function handleDrop(e: React.DragEvent<HTMLDivElement>) {
+		if (!visionModel) {
+			return;
+		}
 		e.preventDefault();
 		e.stopPropagation();
 		const { files } = e.dataTransfer;
@@ -169,27 +176,29 @@ export default memo(function InputPrompt() {
 			onDrop={handleDrop}
 			onDragLeave={() => setFileHandle(false)}
 		>
-			<div>
-				{match(attach)
-					.with({ type: 'image' }, ({ data }) => (
-						<div className="relative">
-							<Button
-								variant="destructive"
-								onClick={() => setAttach(undefined)}
-								className="absolute -right-1 -top-1 w-4 h-4"
-								size="icon"
-							>
-								<X className="w-3 h-3" />
+			{visionModel && (
+				<div>
+					{match(attach)
+						.with({ type: 'image' }, ({ data }) => (
+							<div className="relative">
+								<Button
+									variant="destructive"
+									onClick={() => setAttach(undefined)}
+									className="absolute -right-1 -top-1 w-4 h-4"
+									size="icon"
+								>
+									<X className="w-3 h-3" />
+								</Button>
+								<img src={data} width={64} />
+							</div>
+						))
+						.otherwise(() => (
+							<Button variant="secondary" size="icon">
+								<Paperclip className="w-4 h-4" />
 							</Button>
-							<img src={data} width={64} />
-						</div>
-					))
-					.otherwise(() => (
-						<Button variant="secondary" size="icon">
-							<Paperclip className="w-4 h-4" />
-						</Button>
-					))}
-			</div>
+						))}
+				</div>
+			)}
 			<Textarea
 				ref={promptRef}
 				autoFocus
