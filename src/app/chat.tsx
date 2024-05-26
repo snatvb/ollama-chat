@@ -34,6 +34,7 @@ export default memo(function Chat() {
 		state.conversation.current.id,
 	);
 	const currentConversation = useAtomValue(state.conversation.current.chat);
+	const generating = useAtomValue(state.conversation.current.generating);
 
 	useEffect(() => {
 		chatRef.current?.scrollTo({
@@ -123,6 +124,10 @@ export default memo(function Chat() {
 								);
 							},
 						)
+						.when(
+							() => generating,
+							() => null,
+						)
 						.otherwise(() => (
 							<p className="text-neutral-400 dark:text-neutral-600 text-center mt-10">
 								No message
@@ -160,8 +165,9 @@ function Generating() {
 					)
 					.with({ type: 'image', text: P.when((v) => v.length === 0) }, () => {
 						return (
-							<div className="flex text-xl">
-								Recognizing... <EyesLookingFor />
+							<div className="flex text-xl items-center space-x-2">
+								<EyesLookingFor />
+								<span className="text-lg">Recognizing...</span>
 							</div>
 						);
 					})
