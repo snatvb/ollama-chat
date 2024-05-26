@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { ReloadIcon } from '@radix-ui/react-icons';
 import { Textarea } from '@/components/ui/textarea';
 import { Paperclip, SendIcon, X } from 'lucide-react';
-import { ollama } from '@/core';
+import { GenerateParams, ollama } from '@/core';
 import { toast } from '@/components/ui/use-toast';
 import { state } from './state';
 import { useAtomValue, useSetAtom } from 'jotai';
@@ -14,7 +14,7 @@ import {
 import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
 import { readAs64, resizeImage } from '@/lib/file';
-import { match } from 'ts-pattern';
+import { P, match } from 'ts-pattern';
 
 const drafts = new Map<string, string>();
 
@@ -60,119 +60,59 @@ export default memo(function InputPrompt() {
 			return;
 		}
 
-		// if (attach?.type === 'image' && visionModel) {
-		// 	console.log(attach.data);
-		// 	console.log(visionModel);
-		// 	const res = await ollamaRecognize(txt, visionModel, [
-		// 		attach.data.replace('data:image/png;base64,', ''),
-		// 	]);
-
-		// 	const stream = res;
-		// 	console.log(stream);
-
-		// 	stream.on('data', (data) => {
-		// 		console.log(data);
-		// 	});
-
-		// 	stream.on('end', () => {
-		// 		console.log('stream done');
-		// 	});
-		// 	setTxt('');
-		// 	return;
-		// }
-
 		try {
-			// fetch(`${state.app.takeAPIUrl()}/api/generate`, {
-			// 	body: JSON.stringify({
-			// 		model: chat.model,
-			// 		prompt: txt,
-			// 		context: chat.ctx,
-			// 		stream: true,
-			// 	}),
-			// 	headers: {
-			// 		'Content-Type': 'application/json',
-			// 	},
-			// 	method: 'POST',
-			// })
-			// 	.then((response) => {
-			// 		if (response.ok && response.body) {
-			// 			const reader = response.body
-			// 				.pipeThrough(new TextDecoderStream())
-			// 				.getReader();
-
-			// 			function readStream() {
-			// 				return reader.read().then(({ value, done }) => {
-			// 					if (done) {
-			// 						reader.cancel();
-			// 						return Promise.resolve();
-			// 					}
-
-			// 					// parse the data
-			// 					const data = /{.*}/.exec(value);
-			// 					if (!data || !data[0]) {
-			// 						return readStream();
-			// 					}
-
-			// 					console.log(data[0]);
-
-			// 					// do something if success
-			// 					// and cancel the stream
-			// 					// reader.cancel().catch(() => null);
-			// 					return readStream();
-			// 				});
-			// 			}
-			// 			return readStream();
-			// 		} else {
-			// 			return Promise.reject(response);
-			// 		}
-			// 	})
-			// 	.then(() => {
-			// 		console.log('done');
-			// 	});
-			// axios({
-			// 	method: 'POST',
-			// 	url: `${state.app.takeAPIUrl()}/api/generate`,
-			// 	data: {
-			// 		model: chat.model,
-			// 		prompt: txt,
-			// 		context: chat.ctx,
-			// 		stream: true,
-			// 	},
-			// 	// headers: {
-			// 	// 	'Content-Type': 'application/json',
-			// 	// },
-			// 	responseType: 'stream',
-			// }).then((res) => {
-			// 	console.log(res);
-			// });
-
 			setTxt('');
-			setGenerates((g) => g.set(chat.id, ''));
+			setFileHandle(false);
+			setAttach(undefined);
+
+			type MsgContent = state.conversation.MsgContent;
+			type Generate = state.app.Generate;
+			const [params, mineMessage, generateItem] = match([attach, visionModel])
+				.returnType<[GenerateParams, MsgContent, Generate]>()
+				.with(
+					[
+						{ type: 'image', data: P.select('image') },
+						P.nonNullable.select('model'),
+					],
+					({ image, model }) => [
+						{
+							model,
+							prompt: txt,
+							images: [image.replace(/^data:image\/\w+;base64,/, '')],
+						},
+						{
+							content: txt,
+							type: 'image',
+							image,
+						},
+						{ type: 'image', text: '' },
+					],
+				)
+				.otherwise(() => [
+					{
+						model: chat.model,
+						prompt: txt,
+						context: chat.ctx,
+					},
+					{ content: txt, type: 'text' },
+					{ type: 'text', text: '' },
+				]);
+
+			setGenerates((g) => g.set(chat.id, generateItem));
 
 			appendHistoryConversation(chat.id, {
 				created_at: new Date(),
-				txt: [{ content: txt, type: 'text' }],
+				txt: [mineMessage],
 				who: 'me',
 			});
 
 			let response = '';
-			const result = await ollama.generate(
-				{
-					model: chat.model,
-					prompt: txt,
-					context: chat.ctx,
-				},
-				(chunk) => {
-					setGenerates((g) => {
-						response += chunk.response;
-						return g.set(chat.id, response);
-					});
-				},
-			);
-
-			// const res = await ollamaGenerate(txt, chat.model, chat.ctx);
-			// const convertedToJson = convertTextToJson(res);
-			// const txtMsg = convertedToJson.map((item) => item.response).join('');
+			const result = await ollama.generate(params, (chunk) => {
+				setGenerates((g) => {
+					response += chunk.response;
+					return g.set(chat.id, { type: 'text', text: response });
+				});
+			});
 
 			const updatedCtx = result.context;
 			if (!updatedCtx) {

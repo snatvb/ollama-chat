@@ -59,8 +59,12 @@ export async function ollamaGenerate(
 	}
 }
 
-function fetchOllama(body: string, onProgress: (chunk: string) => void) {
-	return fetch(`${state.app.takeAPIUrl()}/api/generate`, {
+function fetchOllama(
+	body: string,
+	endpoint: string,
+	onProgress: (chunk: string) => void,
+) {
+	return fetch(`${state.app.takeAPIUrl()}/api/${endpoint}`, {
 		body,
 		headers: {
 			'Content-Type': 'application/json',
@@ -121,17 +125,18 @@ export type Done = {
 
 type Chunk = Peace | Done;
 
+export type GenerateParams = {
+	model: string;
+	prompt: string;
+	stream?: boolean;
+	images?: string[];
+	context?: number[];
+};
+
 export const ollama = {
-	generate(
-		params: {
-			model: string;
-			prompt: string;
-			context?: number[];
-		},
-		onProgress: (peace: Peace) => void,
-	) {
+	generate(params: GenerateParams, onProgress: (peace: Peace) => void) {
 		return new Promise<Done>((resolve, reject) => {
-			fetchOllama(JSON.stringify(params), (chunk) => {
+			fetchOllama(JSON.stringify(params), 'generate', (chunk) => {
 				const item: Chunk = JSON.parse(chunk);
 				if (item.done) {
 					resolve(item);
@@ -141,45 +146,21 @@ export const ollama = {
 			}).catch(reject);
 		});
 	},
-};
-
-export async function ollamaRecognize(
-	prompt: string,
-	model: string,
-	images: string[],
-	context?: number[],
-) {
-	try {
-		// const res = await ollamaRequest('POST', 'api/generate', {
-		// 	data: {
-		// 		model,
-		// 		prompt,
-		// 		images,
-		// 		context,
-		// 	},
-		// });
-
-		const res = await axios({
-			method: 'POST',
-			url: `${state.app.takeAPIUrl()}/api/generate`,
-			data: {
+	tokenize(prompt: string, model: string) {
+		// return new Promise<{ embeddings: string }>((resolve, reject) => {
+		return fetch(`${state.app.takeAPIUrl()}/api/show`, {
+			body: JSON.stringify({
 				model,
 				prompt,
-				images,
-				context,
-				stream: true,
+			}),
+			headers: {
+				'Content-Type': 'application/json',
 			},
-			// headers: {
-			// 	'Content-Type': 'application/json',
-			// },
-			responseType: 'stream',
-		});
-
-		return res.data;
-	} catch (error) {
-		throw error;
-	}
-}
+			method: 'POST',
+		}).then((r) => r.json());
+		// });
+	},
+};
 
 export interface OllamaResult {
 	model: string;

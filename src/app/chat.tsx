@@ -12,6 +12,7 @@ import { Conversation, updateConversation } from './state/conversation';
 import { ReloadIcon } from '@radix-ui/react-icons';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
+import { EyesLookingFor } from '@/components/eyes-looking-for';
 
 const states: Record<string, { state: 'loading' }> = {};
 
@@ -147,11 +148,26 @@ function Generating() {
 			<div
 				className={`flex flex-col mb-10 bg-zinc-100 dark:bg-zinc-900 border-solid border-neutral-200 dark:border-neutral-800 border rounded-xl p-2 w-[80%]`}
 			>
-				{generating.length > 0 ? (
-					generating
-				) : (
-					<Skeleton className="w-full h-10 animate-pulse" />
-				)}
+				{match(generating)
+					.with(
+						{
+							type: P.union('text', 'image'),
+							text: P.when((v) => v.length > 0),
+						},
+						({ text }) => {
+							return text;
+						},
+					)
+					.with({ type: 'image', text: P.when((v) => v.length === 0) }, () => {
+						return (
+							<div className="flex text-xl">
+								Recognizing... <EyesLookingFor />
+							</div>
+						);
+					})
+					.otherwise(() => {
+						return <Skeleton className="w-full h-10 animate-pulse" />;
+					})}
 
 				<p className="absolute bottom-[20px] text-xs text-neutral-500">
 					{dayjs(Date.now()).format('HH:MM:ss')}

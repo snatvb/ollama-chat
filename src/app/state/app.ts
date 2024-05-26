@@ -7,7 +7,16 @@ import { store } from './store';
 export type ConnectionStatus = 'connecting' | 'disconnected' | 'connected';
 
 export const lastResponseTime = atom<number | undefined>(undefined);
-export const generates = atom(Immutable.Map<string, string>());
+export type Generate =
+	| {
+			type: 'text';
+			text: string;
+	  }
+	| {
+			type: 'image';
+			text: string;
+	  };
+export const generates = atom(Immutable.Map<string, Generate>());
 export const connectionStatus = atom<ConnectionStatus>('connecting');
 export const connected = atom((get) => get(connectionStatus) === 'connected');
 export const visited = atomPersist(
