@@ -6,6 +6,7 @@ import { Conversation } from '../state/conversation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import ollamaAvatar from '../assets/ollama_avatar.png';
 import { CopyButton } from '@/components/copy-button';
+import { VoiceIt } from '@/voice/components/voice-it';
 
 export interface Props {
 	conversation: Conversation;
@@ -23,45 +24,50 @@ export const OllamaAvatarPrerender = (
 export const ConversationBlock = memo(function ConversationBlock(props: Props) {
 	return (
 		<>
-			{props.conversation.chatHistory.map((item, index) => (
-				<div
-					key={index}
-					className={` relative w-full flex ${
-						item.who === 'me' ? 'justify-end' : ''
-					}`}
-				>
-					{item.who === 'ollama' && OllamaAvatarPrerender}
+			{props.conversation.chatHistory.map((item, index) => {
+				const msg = item.txt?.at(0);
+				if (!msg) {
+					return null;
+				}
+				return (
 					<div
-						className={`right-0 flex flex-col mb-10 bg-zinc-100 dark:bg-zinc-900 border-solid border-neutral-200 dark:border-neutral-800  border rounded-xl p-2 w-[80%]`}
+						key={index}
+						className={` relative w-full flex ${item.who === 'me' ? 'justify-end' : ''}`}
 					>
-						{item.txt?.map((txtItem, txtIndex) => {
-							if (txtItem.type === 'text') {
-								return <Text key={txtIndex} content={txtItem.content} />;
-							} else if (txtItem.type === 'image') {
-								return (
-									<div key={txtIndex} className="relative group">
-										<img
-											src={txtItem.image}
-											alt="attachment"
-											className="max-w-full rounded-md ml-auto mr-auto"
-										/>
-										<div className="mt-2">
-											<Text content={txtItem.content} />
+						{item.who === 'ollama' && OllamaAvatarPrerender}
+						<div
+							className={`right-0 flex flex-col mb-12 bg-zinc-100 dark:bg-zinc-900 border-solid border-neutral-200 dark:border-neutral-800 border rounded-xl p-2 w-[80%]`}
+						>
+							{(() => {
+								if (msg.type === 'text') {
+									return <Text content={msg.content} />;
+								} else if (msg.type === 'image') {
+									return (
+										<div className="relative group">
+											<img
+												src={msg.image}
+												alt="attachment"
+												className="max-w-full rounded-md ml-auto mr-auto"
+											/>
+											<div className="mt-2">
+												<Text content={msg.content} />
+											</div>
 										</div>
-									</div>
-								);
-							}
-						})}
+									);
+								}
+							})()}
 
-						<div className="absolute bottom-[20px] text-xs text-neutral-500">
-							{dayjs(item.created_at).format('HH:MM:ss')}
+							<div className="absolute flex items-center space-x-2 bottom-[20px] text-xs text-neutral-500">
+								<span>{dayjs(item.created_at).format('HH:MM:ss')}</span>
+								<VoiceIt content={msg.content} />
+							</div>
 						</div>
+						{item.who === 'me' && (
+							<div className="ml-2 mt-2.5 text-neutral-400">You</div>
+						)}
 					</div>
-					{item.who === 'me' && (
-						<div className="ml-2 mt-2.5 text-neutral-400">You</div>
-					)}
-				</div>
-			))}
+				);
+			})}
 		</>
 	);
 });
