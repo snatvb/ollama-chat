@@ -172,15 +172,7 @@ export default memo(function InputPrompt() {
 		setFileHandle(true);
 	}
 
-	// Function to handle drop event
-	function handleDrop(e: React.DragEvent<HTMLDivElement>) {
-		if (!visionModel) {
-			return;
-		}
-		e.preventDefault();
-		e.stopPropagation();
-		const { files } = e.dataTransfer;
-		const file = files[0];
+	function handleFile(file: File) {
 		const extensions = ['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp'];
 		if (extensions.some((ext) => file.name.endsWith(ext))) {
 			resizeImage(file, 1280, 720)
@@ -205,14 +197,33 @@ export default memo(function InputPrompt() {
 				description: 'Invalid file format',
 			});
 		}
+	}
 
-		// const reader = new FileReader();
-		// reader.onload = () => {
-		// 	const content = reader.result as string;
-		// 	// console.log(content);
-		// };
-		// reader.readAsDataURL(file);
+	function handleDrop(e: React.DragEvent<HTMLDivElement>) {
+		if (!visionModel) {
+			return;
+		}
+		e.preventDefault();
+		e.stopPropagation();
+		const { files } = e.dataTransfer;
+		const file = files[0];
+		handleFile(file);
+
 		setFileHandle(false);
+	}
+
+	async function handleAttach() {
+		const [picker] = await window.showOpenFilePicker({
+			types: [
+				{
+					description: 'Images',
+					accept: {
+						'image/*': ['.jpg', '.jpeg', '.png', '.gif', '.svg', '.webp'],
+					},
+				},
+			],
+		});
+		handleFile(await picker.getFile());
 	}
 
 	return (
@@ -239,7 +250,7 @@ export default memo(function InputPrompt() {
 							</div>
 						))
 						.otherwise(() => (
-							<Button variant="secondary" size="icon">
+							<Button variant="secondary" size="icon" onClick={handleAttach}>
 								<Paperclip className="w-4 h-4" />
 							</Button>
 						))}

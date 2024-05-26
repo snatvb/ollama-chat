@@ -124,6 +124,9 @@ devDependencies:
   '@types/react-helmet':
     specifier: ^6.1.6
     version: 6.1.6
+  '@types/wicg-file-system-access':
+    specifier: ^2023.10.5
+    version: 2023.10.5
   ndjson:
     specifier: ^2.0.0
     version: 2.0.0
@@ -1618,6 +1621,10 @@ packages:
   /@types/unist@3.0.2:
     resolution: {integrity: sha512-dqId9J8K/vGi5Zr7oo212BGii5m3q5Hxlkwy3WpYuKPklmBEvsbMYYyLxAQpSffdLl/gdW0XUpKWFvYmyoWCoQ==}
     dev: false
+
+  /@types/wicg-file-system-access@2023.10.5:
+    resolution: {integrity: sha512-e9kZO9kCdLqT2h9Tw38oGv9UNzBBWaR1MzuAavxPcsV/7FJ3tWbU6RI3uB+yKIDPGLkGVbplS52ub0AcRLvrhA==}
+    dev: true
 
   /@uiw/react-textarea-code-editor@2.1.7(@babel/runtime@7.22.15)(react-dom@18.2.0)(react@18.2.0):
     resolution: {integrity: sha512-mh3+PLiWPM9eclpdQ16jhm1mlS9IEwwiNkfQX34RACB9M0p7JoSI8Tq0T+3sTgbGzgwkrruOvsXUY6NKYLohZQ==}
